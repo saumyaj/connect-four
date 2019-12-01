@@ -5,14 +5,23 @@ import java.util.*;
 public class Connect4 {
 
     private List<GameListener> listeners;
-    int turn;
-    Board gameBoard;
-    int NUMBER_OF_ROWS = 6;
-    int NUMBER_OF_COLUMNS = 7;
+    private int turn;
+    private Board gameBoard;
+    private int NUMBER_OF_ROWS = 6;
+    private int NUMBER_OF_COLUMNS = 7;
+    private int WIN_LIMIT = 4;
 
     private boolean isSinglePlayerGame = false;
+    private static Connect4 connect4;
 
-    Connect4() {
+    public static Connect4 getInstance() {
+        if (connect4 == null) {
+            connect4 = new Connect4();
+        }
+        return connect4;
+    }
+
+    private Connect4() {
         listeners = new ArrayList<>();
         gameBoard = new Board(NUMBER_OF_COLUMNS, NUMBER_OF_ROWS);
         this.turn = 0;
@@ -42,7 +51,7 @@ public class Connect4 {
         }
 
         // Check if the current player has won
-        if (gameBoard.isGameOver(turn)) {
+        if (gameBoard.findContiguous(WIN_LIMIT, turn)) {
             firePlayerWonEvent(turn);
             return;
         }
@@ -88,7 +97,7 @@ public class Connect4 {
             if (!gameBoard.isColumnFull(i)) {
                 try {
                     gameBoard.columnSelected(i, turn);
-                    boolean isWinnerMove = gameBoard.isGameOver(turn);
+                    boolean isWinnerMove = gameBoard.findContiguous(WIN_LIMIT, turn);
                     gameBoard.removeMostRecentEntryFromColumn(i);
                     if (isWinnerMove) {
                         return Optional.of(i);
