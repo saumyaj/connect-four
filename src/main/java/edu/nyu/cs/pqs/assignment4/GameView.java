@@ -1,125 +1,280 @@
 package edu.nyu.cs.pqs.assignment4;
 
+
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-//import java.awt.*;
 
 public class GameView implements GameListener {
 
+    private final String FRAME_TITLE = "Connect4";
     private Connect4 game;
+    private String topLabelMessage;
+    private int NUMBER_OF_COLUMNS = 7, NUMBER_OF_ROWS = 6;
+    private JLabel gameStatusLabel;
+    private String gameStatusMessage;
+    private JFrame frame;
+    private JPanel gamePanel;
+    private JButton[] columnButtons;
 
-    private final JPanel gui = new JPanel(new BorderLayout(3, 3));
-    private JButton[][] chessBoardSquares = new JButton[8][8];
-    private JPanel chessBoard;
-    private final JLabel message = new JLabel(
-            "Chess Champ is ready to play!");
-    private static final String COLS = "ABCDEFGH";
+    private JButton[][] gameBoardSquares;
+
+
+    // popup code
+    PopupFactory pf = new PopupFactory();
+
+
 
     GameView(Connect4 game) {
         this.game = game;
         game.addGameListener(this);
+        gameBoardSquares = new JButton[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
         initializeGui();
     }
 
-    public final void initializeGui() {
-        // set up the main GUI
-        gui.setBorder(new EmptyBorder(5, 5, 5, 5));
-//        JToolBar tools = new JToolBar();
-//        tools.setFloatable(false);
-//        gui.add(tools, BorderLayout.PAGE_START);
-//        tools.add(new JButton("New")); // TODO - add functionality!
-//        tools.add(new JButton("Save")); // TODO - add functionality!
-//        tools.add(new JButton("Restore")); // TODO - add functionality!
-//        tools.addSeparator();
-//        tools.add(new JButton("Resign")); // TODO - add functionality!
-//        tools.addSeparator();
-//        tools.add(message);
+    public void initializeGui() {
 
-//        gui.add(new JLabel("?"), BorderLayout.LINE_START);
+        // Setting up frame
+        frame = new JFrame(FRAME_TITLE);
+        frame.setSize(1024, 1024);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        chessBoard = new JPanel(new GridLayout(0, 7));
-//        chessBoard.setBorder(new LineBorder(Color.BLACK));
-        gui.add(chessBoard);
+        // Creating menu page
+        JPanel menuPanel = createMenuPanel();
 
-        // create the chess board squares
+        // Creating game page
+        gamePanel = setupGamePanel();
+
+        // Adding initial screen layout to frame
+        frame.getContentPane().add(menuPanel);
+
+        frame.setVisible(true);
+    }
+
+    private void initializeGameBoardSquares() {
         Insets buttonMargin = new Insets(0,5,0,5);
-        for (int ii = 0; ii < chessBoardSquares.length; ii++) {
-            for (int jj = 0; jj < chessBoardSquares[ii].length; jj++) {
+        for (int ii = 0; ii < gameBoardSquares.length; ii++) {
+            for (int jj = 0; jj < gameBoardSquares[ii].length; jj++) {
                 final JButton b = new JButton();
-                b.addActionListener(new ActionListener()
-                {
-                    public void actionPerformed(ActionEvent e)
-                    {
-                        // display/center the jdialog when the button is pressed
-                        b.setBackground(Color.RED);
-                        System.out.println("changed");
-                        Border thickBorder = new LineBorder(Color.WHITE, 12);
-                        b.setBorder(thickBorder);
-                        b.setEnabled(false);
-                    }
-                });
+                b.setEnabled(false);
                 b.setBorderPainted (false);
                 b.setBackground(Color.BLACK);
                 b.setOpaque(true);
                 b.setMargin(buttonMargin);
-                // our chess pieces are 64x64 px in size, so we'll
-                // 'fill this in' using a transparent icon..
                 if ((jj % 2 == 1 && ii % 2 == 1)
                         //) {
                         || (jj % 2 == 0 && ii % 2 == 0)) {
                     b.setBackground(Color.WHITE);
                 } else {
-                    b.setBackground(Color.black);
-                    b.setForeground(Color.black);
+                    b.setBackground(Color.BLACK);
                 }
-                chessBoardSquares[jj][ii] = b;
+                gameBoardSquares[ii][jj] = b;
             }
         }
+    }
 
-        //fill the chess board
-        chessBoard.add(new JLabel(""));
-        // fill the top row
-        for (int ii = 0; ii < 8; ii++) {
-            chessBoard.add(
-                    new JLabel(COLS.substring(ii, ii + 1),
-                            SwingConstants.CENTER));
-        }
-        // fill the black non-pawn piece row
-        for (int ii = 0; ii < 8; ii++) {
-            for (int jj = 0; jj < 8; jj++) {
-                switch (jj) {
-                    case 0:
-                        chessBoard.add(new JLabel("" + (ii + 1),
-                                SwingConstants.CENTER));
-                    default:
-                        chessBoard.add(chessBoardSquares[jj][ii]);
+    private void resetGameBoardSquares() {
+        JButton b;
+        for (int ii = 0; ii < gameBoardSquares.length; ii++) {
+            for (int jj = 0; jj < gameBoardSquares[ii].length; jj++) {
+                b = gameBoardSquares[ii][jj];
+                if ((jj % 2 == 1 && ii % 2 == 1)
+                        || (jj % 2 == 0 && ii % 2 == 0)) {
+                    b.setBackground(Color.WHITE);
+                } else {
+                    b.setBackground(Color.BLACK);
                 }
             }
         }
     }
 
-    public final JComponent getChessBoard() {
-        return chessBoard;
+    private JPanel setupGameBoardPanel() {
+        JPanel gameBoardPanel = new JPanel(new GridLayout(NUMBER_OF_ROWS, NUMBER_OF_COLUMNS));
+        gameBoardPanel.setBorder(new LineBorder(Color.BLACK));
+
+        // create the game board squares
+        initializeGameBoardSquares();
+
+        // Adding board squares to gameBoardPanel
+        for (int ii = 0; ii < NUMBER_OF_ROWS; ii++) {
+            for (int jj = 0; jj < NUMBER_OF_COLUMNS; jj++) {
+                gameBoardPanel.add(gameBoardSquares[ii][jj]);
+            }
+        }
+
+        return gameBoardPanel;
     }
 
-    public final JComponent getGui() {
-        return gui;
+    private JPanel setupColumnButtonPanel() {
+        JPanel columnButtonPanel = new JPanel(new GridLayout(1, 7));
+        columnButtons = new JButton[NUMBER_OF_COLUMNS];
+
+        for (int i=0;i<NUMBER_OF_COLUMNS;i++) {
+            columnButtons[i] = new JButton(Integer.toString(i+1));
+            columnButtons[i].setName(Integer.toString(i));
+
+            columnButtons[i].addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent event) {
+                    columnButtonPressed((JButton)event.getSource());
+                }
+            });
+            columnButtonPanel.add(columnButtons[i]);
+        }
+        return columnButtonPanel;
     }
 
-    void columnButtonPressed(int column) {
+    private void resetColumnButtons() {
+        for (int i=0;i<NUMBER_OF_COLUMNS;i++) {
+            columnButtons[i].setEnabled(true);
+        }
+    }
+
+    private JPanel setupGameControlPanel() {
+        JPanel gameControlPanel = new JPanel();
+        JButton restartButton = new JButton("RESTART");
+        restartButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                game.restartGame();
+            }
+        });
+
+        gameControlPanel.add(restartButton);
+        return gameControlPanel;
+    }
+
+    public void resetGame() {
+        gameStatusLabel.setText(gameStatusMessage);
+        resetColumnButtons();
+        resetGameBoardSquares();
+    }
+
+    private JPanel setupGamePanel() {
+        JPanel gamePanel = new JPanel();
+//        gamePanel.setLayout(new BoxLayout(gamePanel, BoxLayout.Y_AXIS));
+        gamePanel.setLayout(new GridBagLayout());
+
+        // Setting up columnButtonPanel
+        JPanel columnButtonPanel = setupColumnButtonPanel();
+        GridBagConstraints columnButtonPanelConstraints = new GridBagConstraints();
+        columnButtonPanelConstraints.gridx = 0;
+        columnButtonPanelConstraints.gridy = 4;
+
+        // Filler component
+        Component c = javax.swing.Box.createHorizontalGlue();
+        GridBagConstraints constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 3;
+
+        // Setting up gameStatusPanel
+        JPanel gameStatusPanel = setupGameStatusPanel();
+        GridBagConstraints gameStatusPanelConstraints = new GridBagConstraints();
+        gameStatusPanelConstraints.gridx = 0;
+        gameStatusPanelConstraints.gridy = 0;
+        gameStatusPanelConstraints.ipady = 100;
+
+
+        // Setting up gameBoardPanel
+        JPanel gameBoardPanel = setupGameBoardPanel();
+        GridBagConstraints gameBoardPanelConstraints = new GridBagConstraints();
+        gameBoardPanelConstraints.gridx = 0;
+        gameBoardPanelConstraints.gridy = 1;
+//        gameBoardPanelConstraints.ipady = 300;
+
+        // Setup game control panel
+        JPanel gameControlPanel = setupGameControlPanel();
+        GridBagConstraints gameControlPanelConstraints = new GridBagConstraints();
+        gameControlPanelConstraints.gridx = 0;
+        gameControlPanelConstraints.gridy = 5;
+
+
+
+        gamePanel.add(gameStatusPanel, gameStatusPanelConstraints);
+        gamePanel.add(gameBoardPanel, gameBoardPanelConstraints);
+        gamePanel.add(columnButtonPanel, columnButtonPanelConstraints);
+        gamePanel.add(gameControlPanel, gameControlPanelConstraints);
+        gamePanel.add(c, constraints);
+
+        return gamePanel;
+    }
+
+    private JPanel setupGameStatusPanel() {
+        JPanel gameStatusPanel = new JPanel();
+        gameStatusMessage = "game started!";
+        gameStatusLabel = new JLabel(gameStatusMessage);
+        gameStatusPanel.add(gameStatusLabel);
+        return gameStatusPanel;
+    }
+
+    private JPanel createMenuPanel() {
+        JPanel menuPanel = new JPanel();
+
+        JButton singlePlayerGameButton = new JButton("New Single Player Game");
+        JButton twoPlayerGameButton = new JButton("New Two Player Game");
+
+
+        singlePlayerGameButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                gameSelectionButtonPressed(true);
+            }
+        });
+
+        twoPlayerGameButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+                gameSelectionButtonPressed(false);
+            }
+        });
+
+        menuPanel.add(singlePlayerGameButton);
+        menuPanel.add(twoPlayerGameButton);
+
+        return menuPanel;
+    }
+
+    private void gameSelectionButtonPressed(boolean isSinglePlayer) {
+        if (isSinglePlayer)
+            game.startGame(true);
+        else
+            game.startGame(false);
+    }
+
+    public void gameStarted() {
+        frame.getContentPane().removeAll();
+        frame.getContentPane().add(gamePanel);
+        frame.revalidate();
+    }
+
+
+    private void columnButtonPressed(JButton button) {
+        int column = Integer.parseInt(button.getName());
         game.columnSelected(column);
     }
 
-    public void playerMoved(int playerId, int column) {
+    public void playerMoved(int playerId, int row, int column) {
+        if (playerId == 0)
+            gameBoardSquares[row][column].setBackground(Color.RED);
+        else
+            gameBoardSquares[row][column].setBackground(Color.BLUE);
+    }
 
+    void disableAllColumnButtons() {
+        for (int i=0;i<NUMBER_OF_COLUMNS;i++) {
+            disableColumn(i);
+        }
     }
 
     public void playerWon(int playerId) {
+        disableAllColumnButtons();
+        gameStatusLabel.setText("player " + (playerId+1) + " won!");
+    }
 
+    public void gameDraw() {
+        disableAllColumnButtons();
+        gameStatusLabel.setText("Draw!");
+    }
+
+    public void disableColumn(int column) {
+        columnButtons[column].setEnabled(false);
     }
 }

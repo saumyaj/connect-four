@@ -16,7 +16,7 @@ public class Board {
         return board[0][col]!=-1;
     }
 
-    public void columnSelected(int col, int turn) throws Exception {
+    public int columnSelected(int col, int turn) throws Exception {
         if (isColumnFull(col)) {
             throw new Exception("invalid column selection; this column is full");
         }
@@ -24,6 +24,16 @@ public class Board {
 //        System.out.println(row);
 //        System.out.println(turn);
         board[row][col] = turn;
+        return row;
+    }
+
+    public void removeMostRecentEntryFromColumn(int col) {
+        for (int i=0;i<rows;i++) {
+            if (board[i][col]!=-1) {
+                board[i][col] = -1;
+                break;
+            }
+        }
     }
 
     private int nextEmptyRow(int col) {
@@ -113,6 +123,10 @@ public class Board {
         }
 
         return false;
+    }
+
+    void reset() {
+        initializeBoard(cols, rows);
     }
 
     private void initializeBoard(int cols, int rows) {

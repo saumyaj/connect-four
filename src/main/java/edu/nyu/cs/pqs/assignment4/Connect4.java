@@ -1,8 +1,6 @@
 package edu.nyu.cs.pqs.assignment4;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Connect4 {
 
@@ -12,23 +10,31 @@ public class Connect4 {
     int NUMBER_OF_ROWS = 6;
     int NUMBER_OF_COLUMNS = 7;
 
+    private boolean isSinglePlayerGame = false;
+
     Connect4() {
-        listeners = new ArrayList<GameListener>();
+        listeners = new ArrayList<>();
         gameBoard = new Board(NUMBER_OF_COLUMNS, NUMBER_OF_ROWS);
         this.turn = 0;
+    }
+
+    public void startGame(boolean gameType) {
+        isSinglePlayerGame = gameType;
+        fireGameStartedEvent();
     }
 
     public void columnSelected(int column) {
 
         // Try to make a move by the current player
+        int row = -1;
         try {
-            gameBoard.columnSelected(column, turn);
+            row = gameBoard.columnSelected(column, turn);
         } catch (Exception e) {
             System.out.println(e);
         }
 
         // Update view if the move was successful
-        firePlayerMovedEvent(turn, column);
+        firePlayerMovedEvent(turn, row, column);
 
         // If the last used column is full then disable the button for that column
         if (gameBoard.isColumnFull(column)) {
@@ -47,11 +53,57 @@ public class Connect4 {
         }
 
         turn = 1 - turn;
+
+        if (isSinglePlayerGame && turn == 1) {
+            int computerMove = findNextMoveForComputer();
+            columnSelected(computerMove);
+        }
     }
 
-    private void firePlayerMovedEvent(int playerId, int column) {
+    int findNextMoveForComputer() {
+        Optional<Integer> winningMove = checkForWinningMove();
+        if (winningMove.isPresent()) {
+            return winningMove.get();
+        }
+        return pickARandomMove();
+    }
+
+    int pickARandomMove() {
+        while(true) {
+            int col = new Random().nextInt(NUMBER_OF_COLUMNS);
+            if (!gameBoard.isColumnFull(col)) {
+                return col;
+            }
+        }
+    }
+
+    public void restartGame() {
+        gameBoard.reset();
+        turn = 0;
+        fireRestartGameEvent();
+    }
+
+    Optional<Integer> checkForWinningMove() {
+        for (int i=0;i<NUMBER_OF_COLUMNS;i++) {
+            if (!gameBoard.isColumnFull(i)) {
+                try {
+                    gameBoard.columnSelected(i, turn);
+                    boolean isWinnerMove = gameBoard.isGameOver(turn);
+                    gameBoard.removeMostRecentEntryFromColumn(i);
+                    if (isWinnerMove) {
+                        return Optional.of(i);
+                    }
+                } catch (Exception e) {
+                    System.out.println(e);
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    private void firePlayerMovedEvent(int playerId, int row, int column) {
         for (GameListener listener: listeners) {
-            listener.playerMoved(playerId, column);
+            listener.playerMoved(playerId, row, column);
         }
     }
 
@@ -75,6 +127,18 @@ public class Connect4 {
 
     public void addGameListener(GameListener listener) {
         listeners.add(listener);
+    }
+
+    private void fireRestartGameEvent() {
+        for (GameListener listener: listeners) {
+            listener.resetGame();
+        }
+    }
+
+    private void fireGameStartedEvent() {
+        for (GameListener listener: listeners) {
+            listener.gameStarted();
+        }
     }
 
 }
