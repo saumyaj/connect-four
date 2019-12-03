@@ -2,6 +2,7 @@ package edu.nyu.cs.pqs.assignment4;
 
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,23 +10,14 @@ import java.awt.event.ActionListener;
 
 public class GameView implements GameListener {
 
-    private final String FRAME_TITLE = "Connect4";
     private Connect4 game;
-    private String topLabelMessage;
     private int NUMBER_OF_COLUMNS = 7, NUMBER_OF_ROWS = 6;
     private JLabel gameStatusLabel;
     private String gameStatusMessage;
     private JFrame frame;
-    private JPanel gamePanel;
+    private JPanel gamePanel, menuPanel;
     private JButton[] columnButtons;
-
     private JButton[][] gameBoardSquares;
-
-
-    // popup code
-    PopupFactory pf = new PopupFactory();
-
-
 
     GameView(Connect4 game) {
         this.game = game;
@@ -37,12 +29,16 @@ public class GameView implements GameListener {
     public void initializeGui() {
 
         // Setting up frame
+        String FRAME_TITLE = "Connect4";
+        int FRAME_WIDTH = 600;
+        int FRAME_HEIGHT = 600;
         frame = new JFrame(FRAME_TITLE);
-        frame.setSize(1024, 1024);
+        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+        frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Creating menu page
-        JPanel menuPanel = createMenuPanel();
+        menuPanel = createMenuPanel();
 
         // Creating game page
         gamePanel = setupGamePanel();
@@ -54,17 +50,16 @@ public class GameView implements GameListener {
     }
 
     private void initializeGameBoardSquares() {
-        Insets buttonMargin = new Insets(0,5,0,5);
+        Insets buttonMargin = new Insets(0, 5, 0, 5);
         for (int ii = 0; ii < gameBoardSquares.length; ii++) {
             for (int jj = 0; jj < gameBoardSquares[ii].length; jj++) {
                 final JButton b = new JButton();
                 b.setEnabled(false);
-                b.setBorderPainted (false);
+                b.setBorderPainted(false);
                 b.setBackground(Color.BLACK);
                 b.setOpaque(true);
                 b.setMargin(buttonMargin);
                 if ((jj % 2 == 1 && ii % 2 == 1)
-                        //) {
                         || (jj % 2 == 0 && ii % 2 == 0)) {
                     b.setBackground(Color.WHITE);
                 } else {
@@ -92,7 +87,7 @@ public class GameView implements GameListener {
 
     private JPanel setupGameBoardPanel() {
         JPanel gameBoardPanel = new JPanel(new GridLayout(NUMBER_OF_ROWS, NUMBER_OF_COLUMNS));
-        gameBoardPanel.setBorder(new LineBorder(Color.BLACK));
+//        gameBoardPanel.setBorder(new LineBorder(Color.BLACK));
 
         // create the game board squares
         initializeGameBoardSquares();
@@ -111,13 +106,13 @@ public class GameView implements GameListener {
         JPanel columnButtonPanel = new JPanel(new GridLayout(1, 7));
         columnButtons = new JButton[NUMBER_OF_COLUMNS];
 
-        for (int i=0;i<NUMBER_OF_COLUMNS;i++) {
-            columnButtons[i] = new JButton(Integer.toString(i+1));
+        for (int i = 0; i < NUMBER_OF_COLUMNS; i++) {
+            columnButtons[i] = new JButton(Integer.toString(i + 1));
             columnButtons[i].setName(Integer.toString(i));
 
             columnButtons[i].addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent event) {
-                    columnButtonPressed((JButton)event.getSource());
+                    columnButtonPressed((JButton) event.getSource());
                 }
             });
             columnButtonPanel.add(columnButtons[i]);
@@ -126,7 +121,7 @@ public class GameView implements GameListener {
     }
 
     private void resetColumnButtons() {
-        for (int i=0;i<NUMBER_OF_COLUMNS;i++) {
+        for (int i = 0; i < NUMBER_OF_COLUMNS; i++) {
             columnButtons[i].setEnabled(true);
         }
     }
@@ -134,13 +129,14 @@ public class GameView implements GameListener {
     private JPanel setupGameControlPanel() {
         JPanel gameControlPanel = new JPanel();
         JButton restartButton = new JButton("RESTART");
-        restartButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                game.restartGame();
-            }
-        });
+        JButton mainMenuButton = new JButton("Main Menu");
+
+        restartButton.addActionListener(event -> game.restartGame());
+
+        mainMenuButton.addActionListener(event -> game.stop());
 
         gameControlPanel.add(restartButton);
+        gameControlPanel.add(mainMenuButton);
         return gameControlPanel;
     }
 
@@ -152,20 +148,17 @@ public class GameView implements GameListener {
 
     private JPanel setupGamePanel() {
         JPanel gamePanel = new JPanel();
-//        gamePanel.setLayout(new BoxLayout(gamePanel, BoxLayout.Y_AXIS));
-        gamePanel.setLayout(new GridBagLayout());
+        gamePanel.setLayout(new BoxLayout(gamePanel, BoxLayout.Y_AXIS));
+//        gamePanel.setLayout(new GridBagLayout());
 
         // Setting up columnButtonPanel
         JPanel columnButtonPanel = setupColumnButtonPanel();
-        GridBagConstraints columnButtonPanelConstraints = new GridBagConstraints();
-        columnButtonPanelConstraints.gridx = 0;
-        columnButtonPanelConstraints.gridy = 4;
-
-        // Filler component
-        Component c = javax.swing.Box.createHorizontalGlue();
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.gridx = 0;
-        constraints.gridy = 3;
+        Dimension d = new Dimension();
+        d.height = 5;
+        columnButtonPanel.setPreferredSize(d);
+//        GridBagConstraints columnButtonPanelConstraints = new GridBagConstraints();
+//        columnButtonPanelConstraints.gridx = 0;
+//        columnButtonPanelConstraints.gridy = 4;
 
         // Setting up gameStatusPanel
         JPanel gameStatusPanel = setupGameStatusPanel();
@@ -177,10 +170,12 @@ public class GameView implements GameListener {
 
         // Setting up gameBoardPanel
         JPanel gameBoardPanel = setupGameBoardPanel();
-        GridBagConstraints gameBoardPanelConstraints = new GridBagConstraints();
-        gameBoardPanelConstraints.gridx = 0;
-        gameBoardPanelConstraints.gridy = 1;
-//        gameBoardPanelConstraints.ipady = 300;
+        Dimension boardDimension = new Dimension();
+        boardDimension.height = 350;
+        gameBoardPanel.setPreferredSize(boardDimension);
+//        GridBagConstraints gameBoardPanelConstraints = new GridBagConstraints();
+//        gameBoardPanelConstraints.gridx = 0;
+//        gameBoardPanelConstraints.gridy = 1;
 
         // Setup game control panel
         JPanel gameControlPanel = setupGameControlPanel();
@@ -190,29 +185,40 @@ public class GameView implements GameListener {
 
 
 
-        gamePanel.add(gameStatusPanel, gameStatusPanelConstraints);
-        gamePanel.add(gameBoardPanel, gameBoardPanelConstraints);
-        gamePanel.add(columnButtonPanel, columnButtonPanelConstraints);
-        gamePanel.add(gameControlPanel, gameControlPanelConstraints);
-        gamePanel.add(c, constraints);
+//        gamePanel.add(gameStatusPanel, gameStatusPanelConstraints);
+//        gamePanel.add(gameBoardPanel, gameBoardPanelConstraints);
+//        gamePanel.add(columnButtonPanel, columnButtonPanelConstraints);
+//        gamePanel.add(gameControlPanel, gameControlPanelConstraints);
+
+        gamePanel.add(gameStatusPanel);
+        gamePanel.add(gameBoardPanel);
+        gamePanel.add(Box.createVerticalStrut(10));
+        gamePanel.add(columnButtonPanel);
+        gamePanel.add(Box.createVerticalStrut(20));
+        gamePanel.add(gameControlPanel);
 
         return gamePanel;
     }
 
     private JPanel setupGameStatusPanel() {
         JPanel gameStatusPanel = new JPanel();
-        gameStatusMessage = "game started!";
+        gameStatusMessage = "Game started! Player 1 to move";
         gameStatusLabel = new JLabel(gameStatusMessage);
         gameStatusPanel.add(gameStatusLabel);
+        Border paddingBorder = BorderFactory.createEmptyBorder(10, 10, 10, 10);
+        Border border = BorderFactory.createLineBorder(Color.BLACK);
+        gameStatusLabel.setBorder(BorderFactory.createCompoundBorder(border, paddingBorder));
         return gameStatusPanel;
     }
 
     private JPanel createMenuPanel() {
-        JPanel menuPanel = new JPanel();
+        JPanel menuPanel = new JPanel(new GridBagLayout());
 
-        JButton singlePlayerGameButton = new JButton("New Single Player Game");
-        JButton twoPlayerGameButton = new JButton("New Two Player Game");
+        String SINGLE_PLAYER_BUTTON_TEXT = "New Single Player Game";
+        String TWO_PLAYER_BUTTON_TEXT = "New Two Player Game";
 
+        JButton singlePlayerGameButton = new JButton(SINGLE_PLAYER_BUTTON_TEXT);
+        JButton twoPlayerGameButton = new JButton(TWO_PLAYER_BUTTON_TEXT);
 
         singlePlayerGameButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -226,23 +232,25 @@ public class GameView implements GameListener {
             }
         });
 
-        menuPanel.add(singlePlayerGameButton);
-        menuPanel.add(twoPlayerGameButton);
+        JPanel centerPanel = new JPanel();
+        centerPanel.add(singlePlayerGameButton);
+        centerPanel.add(twoPlayerGameButton);
+
+        menuPanel.add(centerPanel);
 
         return menuPanel;
     }
 
     private void gameSelectionButtonPressed(boolean isSinglePlayer) {
-        if (isSinglePlayer)
-            game.startGame(true);
-        else
-            game.startGame(false);
+        game.startGame(isSinglePlayer);
     }
 
     public void gameStarted() {
         frame.getContentPane().removeAll();
         frame.getContentPane().add(gamePanel);
         frame.revalidate();
+        frame.getContentPane().doLayout();
+        frame.update(frame.getGraphics());
     }
 
 
@@ -252,21 +260,24 @@ public class GameView implements GameListener {
     }
 
     public void playerMoved(int playerId, int row, int column) {
-        if (playerId == 0)
+        if (playerId == 0) {
             gameBoardSquares[row][column].setBackground(Color.RED);
-        else
+            gameStatusLabel.setText("Player 2 to move");
+        } else {
             gameBoardSquares[row][column].setBackground(Color.BLUE);
+            gameStatusLabel.setText("Player 1 to move");
+        }
     }
 
-    void disableAllColumnButtons() {
-        for (int i=0;i<NUMBER_OF_COLUMNS;i++) {
-            disableColumn(i);
+    private void disableAllColumnButtons() {
+        for (int i = 0; i < NUMBER_OF_COLUMNS; i++) {
+            disableColumnButton(i);
         }
     }
 
     public void playerWon(int playerId) {
         disableAllColumnButtons();
-        gameStatusLabel.setText("player " + (playerId+1) + " won!");
+        gameStatusLabel.setText("player " + (playerId + 1) + " won!");
     }
 
     public void gameDraw() {
@@ -274,7 +285,16 @@ public class GameView implements GameListener {
         gameStatusLabel.setText("Draw!");
     }
 
-    public void disableColumn(int column) {
+    public void disableColumnButton(int column) {
         columnButtons[column].setEnabled(false);
+    }
+
+    public void gameStopped() {
+        frame.getContentPane().removeAll();
+//        frame.revalidate();
+        frame.getContentPane().add(menuPanel);
+//        frame.revalidate();
+//        frame.getContentPane().doLayout();
+        frame.update(frame.getGraphics());
     }
 }
