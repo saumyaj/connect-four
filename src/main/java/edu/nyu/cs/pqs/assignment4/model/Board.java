@@ -1,25 +1,40 @@
-package edu.nyu.cs.pqs.assignment4;
+package edu.nyu.cs.pqs.assignment4.model;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 public class Board {
     private int[][] board;
-    private final int NUM_OF_ROWS;
+    private final int height;
+    private final int width;
 
-    public int getNUM_OF_ROWS() {
-        return NUM_OF_ROWS;
+    int getHeight() {
+        return height;
     }
 
-    public int getNUM_OF_COLUMNS() {
-        return NUM_OF_COLUMNS;
+    int getWidth() {
+        return width;
     }
 
-    private final int NUM_OF_COLUMNS;
+    Board(int width, int height) {
+        this.height = height;
+        this.width = width;
+        initializeBoard(width, height);
+    }
 
-    Board(int NUM_OF_COLUMNS, int NUM_OF_ROWS) {
-        this.NUM_OF_ROWS = NUM_OF_ROWS;
-        this.NUM_OF_COLUMNS = NUM_OF_COLUMNS;
-        initializeBoard(NUM_OF_COLUMNS, NUM_OF_ROWS);
+    Board(Board sourceBoard) {
+        this.height = sourceBoard.getHeight();
+        this.width = sourceBoard.getWidth();
+        initializeBoard(width, height);
+        for (int i=0;i<width;i++) {
+            for(int j=0;j<height;j++) {
+                board[j][i] = sourceBoard.getEntry(j, i);
+            }
+        }
+    }
+
+    int getEntry(int row, int column) {
+        return board[row][column];
     }
 
     private void initializeBoard(int cols, int rows) {
@@ -34,20 +49,20 @@ public class Board {
     }
 
     int columnSelected(int col, int turn) throws IllegalArgumentException {
-        if (col < 0 || col >= NUM_OF_COLUMNS) {
+        if (col < 0 || col >= width) {
             throw new IllegalArgumentException("invalid column value; column value should be between 0 and " +
-                    NUM_OF_COLUMNS);
+                    width);
         }
         if (isColumnFull(col)) {
             throw new IllegalArgumentException("invalid column selection; column " + col + " is full");
         }
-        int row = nextEmptyRow(col);
+        int row = nextEmptyRow(col).get();
         board[row][col] = turn;
         return row;
     }
 
     void removeMostRecentEntryFromColumn(int col) {
-        for (int i = 0; i< NUM_OF_ROWS; i++) {
+        for (int i = 0; i< height; i++) {
             if (board[i][col]!=-1) {
                 board[i][col] = -1;
                 break;
@@ -55,17 +70,17 @@ public class Board {
         }
     }
 
-    private int nextEmptyRow(int col) {
-        for(int i = this.NUM_OF_ROWS -1; i>=0; i--) {
+    private Optional<Integer> nextEmptyRow(int col) {
+        for(int i = this.height -1; i>=0; i--) {
             if (board[i][col]==-1) {
-                return i;
+                return Optional.of(i);
             }
         }
-        return -1;
+        return Optional.empty();
     }
 
     boolean isBoardFull() {
-        for(int j = 0; j< NUM_OF_COLUMNS; j++) {
+        for(int j = 0; j< width; j++) {
             if (board[0][j] == -1) {
                 return false;
             }
@@ -73,12 +88,12 @@ public class Board {
         return true;
     }
 
-    boolean findContiguous(int n, int symbol) {
+    boolean findContiguousSymbols(int n, int symbol) {
 
         // Check if n in a row
-        for(int row = 0; row< NUM_OF_ROWS; row++) {
-            for(int col = 0; col< NUM_OF_COLUMNS; col++) {
-                if (board[row][col]==symbol && col+(n-1)< NUM_OF_COLUMNS) {
+        for(int row = 0; row< height; row++) {
+            for(int col = 0; col< width; col++) {
+                if (board[row][col]==symbol && col+(n-1)< width) {
                     boolean flag = true;
                     for (int k=1;k<n;k++) {
                         if (board[row][col + k] != symbol) {
@@ -94,9 +109,9 @@ public class Board {
         }
 
         // Check if n in a column
-        for(int col = 0; col< NUM_OF_COLUMNS; col++) {
-            for(int row = 0; row< NUM_OF_ROWS; row++) {
-                if (board[row][col]==symbol && row+(n-1)< NUM_OF_ROWS) {
+        for(int col = 0; col< width; col++) {
+            for(int row = 0; row< height; row++) {
+                if (board[row][col]==symbol && row+(n-1)< height) {
                     boolean flag = true;
                     for (int k=1;k<n;k++) {
                         if (board[row+k][col] != symbol) {
@@ -112,8 +127,8 @@ public class Board {
         }
 
         // Check for n consecutive symbols in ascending diagonal.
-        for (int i = 0; i < NUM_OF_ROWS; i++) {
-            for (int j = 0; j < NUM_OF_COLUMNS; j++) {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
                 if (canMove(i + (n-1), j + (n-1))) {
                     if (board[i][j] == board[i + 1][j + 1]
                             && board[i][j] == board[i + 2][j + 2]
@@ -126,8 +141,8 @@ public class Board {
         }
 
         // Check for n consecutive symbols in descending diagonal.
-        for (int i = 0; i < NUM_OF_ROWS; i++) {
-            for (int j = 0; j < NUM_OF_COLUMNS; j++) {
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
                 if (canMove(i - (n-1), j + (n-1))) {
                     if (board[i][j] == board[i - 1][j + 1]
                             && board[i][j] == board[i - 2][j + 2]
@@ -142,38 +157,38 @@ public class Board {
     }
 
     void reset() {
-        initializeBoard(NUM_OF_COLUMNS, NUM_OF_ROWS);
+        initializeBoard(width, height);
     }
 
     private boolean canMove(int row, int col) {
-        if ((row <= -1) || (col <= -1) || (row >= NUM_OF_ROWS) || (col >= NUM_OF_COLUMNS)) {
+        if ((row <= -1) || (col <= -1) || (row >= height) || (col >= width)) {
             return false;
         }
         return true;
     }
 
-//    public void print() {
-//        for (int i = 0; i< NUM_OF_ROWS; i++) {
-//            for (int j = 0; j< NUM_OF_COLUMNS; j++) {
-//                if (j!=6) {
-//                    if (board[i][j] == 1) {
-//                        System.out.print("| " + "X" + " ");
-//                    } else if (board[i][j] == 0) {
-//                        System.out.print("| " + "O" + " ");
-//                    } else {
-//                        System.out.print("| " + "-" + " ");
-//                    }
-//                } else {
-//                    if (board[i][j] == 1) {
-//                        System.out.println("| " + "X" + " |");
-//                    } else if (board[i][j] == 0) {
-//                        System.out.println("| " + "O" + " |");
-//                    } else {
-//                        System.out.println("| " + "-" + " |");
-//                    }
-//                }
-//            }
-//        }
-//        return;
-//    }
+    public void print() {
+        for (int i = 0; i< height; i++) {
+            for (int j = 0; j< width; j++) {
+                if (j!=6) {
+                    if (board[i][j] == 1) {
+                        System.out.print("| " + "X" + " ");
+                    } else if (board[i][j] == 0) {
+                        System.out.print("| " + "O" + " ");
+                    } else {
+                        System.out.print("| " + "-" + " ");
+                    }
+                } else {
+                    if (board[i][j] == 1) {
+                        System.out.println("| " + "X" + " |");
+                    } else if (board[i][j] == 0) {
+                        System.out.println("| " + "O" + " |");
+                    } else {
+                        System.out.println("| " + "-" + " |");
+                    }
+                }
+            }
+        }
+        return;
+    }
 }

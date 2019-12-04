@@ -1,9 +1,10 @@
-package edu.nyu.cs.pqs.assignment4;
+package edu.nyu.cs.pqs.assignment4.view;
 
+import edu.nyu.cs.pqs.assignment4.model.Connect4;
+import edu.nyu.cs.pqs.assignment4.model.GameListener;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -19,7 +20,7 @@ public class GameView implements GameListener {
     private JButton[] columnButtons;
     private JButton[][] gameBoardSquares;
 
-    GameView(Connect4 game) {
+    public GameView(Connect4 game) {
         this.game = game;
         game.addGameListener(this);
         gameBoardSquares = new JButton[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
@@ -87,7 +88,6 @@ public class GameView implements GameListener {
 
     private JPanel setupGameBoardPanel() {
         JPanel gameBoardPanel = new JPanel(new GridLayout(NUMBER_OF_ROWS, NUMBER_OF_COLUMNS));
-//        gameBoardPanel.setBorder(new LineBorder(Color.BLACK));
 
         // create the game board squares
         initializeGameBoardSquares();
@@ -110,11 +110,7 @@ public class GameView implements GameListener {
             columnButtons[i] = new JButton(Integer.toString(i + 1));
             columnButtons[i].setName(Integer.toString(i));
 
-            columnButtons[i].addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent event) {
-                    columnButtonPressed((JButton) event.getSource());
-                }
-            });
+            columnButtons[i].addActionListener(event -> columnButtonPressed((JButton) event.getSource()));
             columnButtonPanel.add(columnButtons[i]);
         }
         return columnButtonPanel;
@@ -131,7 +127,7 @@ public class GameView implements GameListener {
         JButton restartButton = new JButton("RESTART");
         JButton mainMenuButton = new JButton("Main Menu");
 
-        restartButton.addActionListener(event -> game.restartGame());
+        restartButton.addActionListener(event -> game.resetGame());
 
         mainMenuButton.addActionListener(event -> game.stop());
 
@@ -149,33 +145,21 @@ public class GameView implements GameListener {
     private JPanel setupGamePanel() {
         JPanel gamePanel = new JPanel();
         gamePanel.setLayout(new BoxLayout(gamePanel, BoxLayout.Y_AXIS));
-//        gamePanel.setLayout(new GridBagLayout());
 
         // Setting up columnButtonPanel
         JPanel columnButtonPanel = setupColumnButtonPanel();
-        Dimension d = new Dimension();
-        d.height = 5;
-        columnButtonPanel.setPreferredSize(d);
-//        GridBagConstraints columnButtonPanelConstraints = new GridBagConstraints();
-//        columnButtonPanelConstraints.gridx = 0;
-//        columnButtonPanelConstraints.gridy = 4;
+        Dimension buttonPanelDimension = new Dimension();
+        buttonPanelDimension.height = 5;
+        columnButtonPanel.setPreferredSize(buttonPanelDimension);
 
         // Setting up gameStatusPanel
         JPanel gameStatusPanel = setupGameStatusPanel();
-        GridBagConstraints gameStatusPanelConstraints = new GridBagConstraints();
-        gameStatusPanelConstraints.gridx = 0;
-        gameStatusPanelConstraints.gridy = 0;
-        gameStatusPanelConstraints.ipady = 100;
-
 
         // Setting up gameBoardPanel
         JPanel gameBoardPanel = setupGameBoardPanel();
         Dimension boardDimension = new Dimension();
         boardDimension.height = 350;
         gameBoardPanel.setPreferredSize(boardDimension);
-//        GridBagConstraints gameBoardPanelConstraints = new GridBagConstraints();
-//        gameBoardPanelConstraints.gridx = 0;
-//        gameBoardPanelConstraints.gridy = 1;
 
         // Setup game control panel
         JPanel gameControlPanel = setupGameControlPanel();
@@ -183,13 +167,7 @@ public class GameView implements GameListener {
         gameControlPanelConstraints.gridx = 0;
         gameControlPanelConstraints.gridy = 5;
 
-
-
-//        gamePanel.add(gameStatusPanel, gameStatusPanelConstraints);
-//        gamePanel.add(gameBoardPanel, gameBoardPanelConstraints);
-//        gamePanel.add(columnButtonPanel, columnButtonPanelConstraints);
-//        gamePanel.add(gameControlPanel, gameControlPanelConstraints);
-
+        // putting it all together
         gamePanel.add(gameStatusPanel);
         gamePanel.add(gameBoardPanel);
         gamePanel.add(Box.createVerticalStrut(10));
@@ -291,10 +269,7 @@ public class GameView implements GameListener {
 
     public void gameStopped() {
         frame.getContentPane().removeAll();
-//        frame.revalidate();
-        frame.getContentPane().add(menuPanel);
-//        frame.revalidate();
-//        frame.getContentPane().doLayout();
+        frame.getContentPane().add(menuPanel);;
         frame.update(frame.getGraphics());
     }
 }

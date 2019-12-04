@@ -1,4 +1,4 @@
-package edu.nyu.cs.pqs.assignment4;
+package edu.nyu.cs.pqs.assignment4.model;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import static edu.nyu.cs.pqs.assignment4.TestUtils.board;
+import static edu.nyu.cs.pqs.assignment4.model.TestUtils.board;
 
 class BoardTest {
 
@@ -24,7 +24,7 @@ class BoardTest {
 
     @Test
     void testNonFullColumnDetection() {
-        for (int j = 0; j<=board.getNUM_OF_ROWS()-1;j++) {
+        for (int j = 0; j<=board.getHeight()-1; j++) {
             for (int i = 0; i < j; i++) {
                 board.columnSelected(0, 0);
             }
@@ -43,13 +43,13 @@ class BoardTest {
     @Test
     void testColumnSelectedWithOutOfRangeColumn() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            board.columnSelected(board.getNUM_OF_COLUMNS(), 1);
+            board.columnSelected(board.getWidth(), 1);
         });
     }
 
     @Test
     void testColumnSelectedWithFullColumn() {
-        for (int i=0;i<board.getNUM_OF_ROWS();i++) {
+        for (int i = 0; i<board.getHeight(); i++) {
             board.columnSelected(0, 0);
         }
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
@@ -60,7 +60,7 @@ class BoardTest {
     @Test
     void testRemovingMostRecentEntryFromColumn() {
 
-        for (int i = 0; i < board.getNUM_OF_ROWS(); i++) {
+        for (int i = 0; i < board.getHeight(); i++) {
             board.columnSelected(0, 0);
         }
         assertTrue(board.isColumnFull(0));
@@ -76,8 +76,8 @@ class BoardTest {
 
     @Test
     void testFullBoard() {
-        for (int i=0;i<board.getNUM_OF_COLUMNS();i++) {
-            for(int j=0;j<board.getNUM_OF_ROWS();j++) {
+        for (int i = 0; i<board.getWidth(); i++) {
+            for(int j = 0; j<board.getHeight(); j++) {
                 board.columnSelected(i, 0);
             }
         }
@@ -93,7 +93,7 @@ class BoardTest {
         for (int i=1;i<=4;i++) {
             board.columnSelected(i, 1);
         }
-        assertTrue(board.findContiguous(4, 1));
+        assertTrue(board.findContiguousSymbols(4, 1));
     }
 
     @Test
@@ -101,7 +101,7 @@ class BoardTest {
         for(int i=0;i<4;i++) {
             board.columnSelected(0, 1);
         }
-        assertTrue(board.findContiguous(4, 1));
+        assertTrue(board.findContiguousSymbols(4, 1));
     }
 
     @Test
@@ -111,7 +111,7 @@ class BoardTest {
                 board.columnSelected(4 - i, j);
             }
         }
-        assertTrue(board.findContiguous(4, 1));
+        assertTrue(board.findContiguousSymbols(4, 1));
     }
 
     @Test
@@ -121,12 +121,30 @@ class BoardTest {
                 board.columnSelected(i, j);
             }
         }
-        assertTrue(board.findContiguous(4, 1));
+        assertTrue(board.findContiguousSymbols(4, 1));
     }
 
     @Test
     void testNoContiguousSymbols() {
-        assertFalse(board.findContiguous(4, 1));
+        assertFalse(board.findContiguousSymbols(4, 1));
+    }
+
+    @Test
+    void testBoardCloneConstruction() {
+        Board board1 = new Board(5, 10);
+        for (int i=0;i<10;i++) {
+            for (int j=0;j<5;j++) {
+                board1.columnSelected(j, i*j);
+            }
+        }
+
+        Board board2 = new Board(board1);
+
+        for (int i=0;i<10;i++) {
+            for (int j=0;j<5;j++) {
+                assertEquals(board1.getEntry(i, j), board2.getEntry(i, j));
+            }
+        }
     }
 
 }

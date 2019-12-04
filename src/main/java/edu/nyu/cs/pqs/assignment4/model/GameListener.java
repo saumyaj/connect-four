@@ -1,4 +1,4 @@
-package edu.nyu.cs.pqs.assignment4;
+package edu.nyu.cs.pqs.assignment4.model;
 
 public interface GameListener {
 
