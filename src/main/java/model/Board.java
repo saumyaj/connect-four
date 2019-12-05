@@ -1,12 +1,12 @@
-package edu.nyu.cs.pqs.assignment4.model;
+package model;
 
 import java.util.Arrays;
 import java.util.Optional;
 
-public class Board {
+class Board {
     private int[][] board;
-    private final int height;
-    private final int width;
+    private final int height = 6; //capital letters
+    private final int width = 7;//capital letters
 
     int getHeight() {
         return height;
@@ -16,18 +16,14 @@ public class Board {
         return width;
     }
 
-    Board(int width, int height) {
-        this.height = height;
-        this.width = width;
-        initializeBoard(width, height);
+    Board() {
+        initializeBoard();
     }
 
     Board(Board sourceBoard) {
-        this.height = sourceBoard.getHeight();
-        this.width = sourceBoard.getWidth();
-        initializeBoard(width, height);
-        for (int i=0;i<width;i++) {
-            for(int j=0;j<height;j++) {
+        initializeBoard();
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
                 board[j][i] = sourceBoard.getEntry(j, i);
             }
         }
@@ -37,15 +33,15 @@ public class Board {
         return board[row][column];
     }
 
-    private void initializeBoard(int cols, int rows) {
-        this.board = new int[rows][cols];
-        for(int i=0;i<rows;i++) {
+    private void initializeBoard() {
+        this.board = new int[height][width];
+        for (int i = 0; i < height; i++) {
             Arrays.fill(this.board[i], -1);
         }
     }
 
     boolean isColumnFull(int col) {
-        return board[0][col]!=-1;
+        return board[0][col] != -1;
     }
 
     int columnSelected(int col, int turn) throws IllegalArgumentException {
@@ -62,8 +58,8 @@ public class Board {
     }
 
     void removeMostRecentEntryFromColumn(int col) {
-        for (int i = 0; i< height; i++) {
-            if (board[i][col]!=-1) {
+        for (int i = 0; i < height; i++) {
+            if (board[i][col] != -1) {
                 board[i][col] = -1;
                 break;
             }
@@ -71,8 +67,8 @@ public class Board {
     }
 
     private Optional<Integer> nextEmptyRow(int col) {
-        for(int i = this.height -1; i>=0; i--) {
-            if (board[i][col]==-1) {
+        for (int i = this.height - 1; i >= 0; i--) {
+            if (board[i][col] == -1) {
                 return Optional.of(i);
             }
         }
@@ -80,7 +76,7 @@ public class Board {
     }
 
     boolean isBoardFull() {
-        for(int j = 0; j< width; j++) {
+        for (int j = 0; j < width; j++) {
             if (board[0][j] == -1) {
                 return false;
             }
@@ -91,11 +87,11 @@ public class Board {
     boolean findContiguousSymbols(int n, int symbol) {
 
         // Check if n in a row
-        for(int row = 0; row< height; row++) {
-            for(int col = 0; col< width; col++) {
-                if (board[row][col]==symbol && col+(n-1)< width) {
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                if (board[row][col] == symbol && col + (n - 1) < width) {
                     boolean flag = true;
-                    for (int k=1;k<n;k++) {
+                    for (int k = 1; k < n; k++) {
                         if (board[row][col + k] != symbol) {
                             flag = false;
                             break;
@@ -109,12 +105,12 @@ public class Board {
         }
 
         // Check if n in a column
-        for(int col = 0; col< width; col++) {
-            for(int row = 0; row< height; row++) {
-                if (board[row][col]==symbol && row+(n-1)< height) {
+        for (int col = 0; col < width; col++) {
+            for (int row = 0; row < height; row++) {
+                if (board[row][col] == symbol && row + (n - 1) < height) {
                     boolean flag = true;
-                    for (int k=1;k<n;k++) {
-                        if (board[row+k][col] != symbol) {
+                    for (int k = 1; k < n; k++) {
+                        if (board[row + k][col] != symbol) {
                             flag = false;
                             break;
                         }
@@ -129,7 +125,7 @@ public class Board {
         // Check for n consecutive symbols in ascending diagonal.
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                if (canMove(i + (n-1), j + (n-1))) {
+                if (canMove(i + (n - 1), j + (n - 1))) {
                     if (board[i][j] == board[i + 1][j + 1]
                             && board[i][j] == board[i + 2][j + 2]
                             && board[i][j] == board[i + 3][j + 3]
@@ -143,7 +139,7 @@ public class Board {
         // Check for n consecutive symbols in descending diagonal.
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                if (canMove(i - (n-1), j + (n-1))) {
+                if (canMove(i - (n - 1), j + (n - 1))) {
                     if (board[i][j] == board[i - 1][j + 1]
                             && board[i][j] == board[i - 2][j + 2]
                             && board[i][j] == board[i - 3][j + 3]
@@ -157,7 +153,7 @@ public class Board {
     }
 
     void reset() {
-        initializeBoard(width, height);
+        initializeBoard();
     }
 
     private boolean canMove(int row, int col) {
@@ -167,28 +163,28 @@ public class Board {
         return true;
     }
 
-    public void print() {
-        for (int i = 0; i< height; i++) {
-            for (int j = 0; j< width; j++) {
-                if (j!=6) {
-                    if (board[i][j] == 1) {
-                        System.out.print("| " + "X" + " ");
-                    } else if (board[i][j] == 0) {
-                        System.out.print("| " + "O" + " ");
-                    } else {
-                        System.out.print("| " + "-" + " ");
-                    }
-                } else {
-                    if (board[i][j] == 1) {
-                        System.out.println("| " + "X" + " |");
-                    } else if (board[i][j] == 0) {
-                        System.out.println("| " + "O" + " |");
-                    } else {
-                        System.out.println("| " + "-" + " |");
-                    }
-                }
-            }
-        }
-        return;
-    }
+//    public void print() {
+//        for (int i = 0; i < height; i++) {
+//            for (int j = 0; j < width; j++) {
+//                if (j != 6) {
+//                    if (board[i][j] == 1) {
+//                        System.out.print("| " + "X" + " ");
+//                    } else if (board[i][j] == 0) {
+//                        System.out.print("| " + "O" + " ");
+//                    } else {
+//                        System.out.print("| " + "-" + " ");
+//                    }
+//                } else {
+//                    if (board[i][j] == 1) {
+//                        System.out.println("| " + "X" + " |");
+//                    } else if (board[i][j] == 0) {
+//                        System.out.println("| " + "O" + " |");
+//                    } else {
+//                        System.out.println("| " + "-" + " |");
+//                    }
+//                }
+//            }
+//        }
+//        return;
+//    }
 }

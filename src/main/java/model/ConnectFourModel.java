@@ -1,28 +1,27 @@
-package edu.nyu.cs.pqs.assignment4.model;
+package model;
 
 import java.util.*;
 
-public class Connect4 {
+public class ConnectFourModel {
 
     private List<GameListener> listeners;
+    private Player[] players;
     private int turn;
-    private final int GAME_BOARD_HEIGHT = 6;
-    private final int GAME_BOARD_WIDTH = 7;
     private final int WIN_LIMIT = 4;
     private Board gameBoard;
+    private static final int NUM_OF_PLAYERS = 2;
 
-    private boolean isSinglePlayerGame = false;
-    private static Connect4 connect4;
-    private ComputerPlayer computerPlayer;
+    private static ConnectFourModel connectFourModel;
 
-    public static Connect4 getInstance(Board board) {
-        if (connect4 == null)
-            connect4 = new Connect4(board);
-        return connect4;
+    public static ConnectFourModel getInstance(Board board) {
+        if (connectFourModel == null)
+            connectFourModel = new ConnectFourModel(board);
+        return connectFourModel;
     }
 
-    private Connect4(Board gameBoard) {
+    private ConnectFourModel(Board gameBoard) {
         listeners = new ArrayList<>();
+        players = new Player[NUM_OF_PLAYERS];
         this.gameBoard = gameBoard;
         this.turn = 0;
     }
@@ -45,15 +44,14 @@ public class Connect4 {
 
     /**
      * This method initiates the game model
-     *
-     * @param gameType This is a boolean parameter indicating if the game is single player game
+     * @param p1 - first player in the game. This players gets first move
+     * @param p2 - second player in the game. This player moves after the first player
      */
-    public void startGame(boolean gameType) {
-        isSinglePlayerGame = gameType;
-        if (isSinglePlayerGame) {
-            computerPlayer = new ComputerPlayer(this);
-        }
-        fireGameStartedEvent();
+    public void startGame(Player p1, Player p2) {
+        players[0] = p1;
+        players[1] = p2;
+        restartGame();
+        fireGameStartedEvent(p1);
     }
 
     /**
@@ -67,7 +65,7 @@ public class Connect4 {
         int row = gameBoard.columnSelected(column, turn);
 
         // Update view if the move was successful
-        firePlayerMovedEvent(turn, row, column);
+        firePlayerMovedEvent(players[turn], players[1 - turn], row, column);
 
         // If the last used column is full then disable the button for that column
         if (gameBoard.isColumnFull(column)) {
@@ -76,7 +74,7 @@ public class Connect4 {
 
         // Check if the current player has won
         if (gameBoard.findContiguousSymbols(WIN_LIMIT, turn)) {
-            firePlayerWonEvent(turn);
+            firePlayerWonEvent(players[turn]);
             return;
         }
 
@@ -88,9 +86,7 @@ public class Connect4 {
 
         turn = 1 - turn;
 
-        if (isSinglePlayerGame && turn == 1) {
-            computerPlayer.move();
-        }
+        players[turn].move();
     }
 
     Board getCurrentState() {
@@ -100,17 +96,18 @@ public class Connect4 {
     /**
      * This method resets the game to its initial state and gives the chance to move to player 1
      */
-    public void resetGame() {
+    public void restartGame() {
         gameBoard.reset();
         turn = 0;
-        fireRestartGameEvent();
+        fireRestartGameEvent(players[0]);
     }
 
     /**
      * This method stops the game
      */
     public void stop() {
-        resetGame();
+        gameBoard.reset();
+        turn = 0;
         fireGameStoppedEvent();
     }
 
@@ -120,9 +117,9 @@ public class Connect4 {
         }
     }
 
-    private void firePlayerMovedEvent(int playerId, int row, int column) {
+    private void firePlayerMovedEvent(Player currentPlayer, Player nextPlayer, int row, int column) {
         for (GameListener listener : listeners) {
-            listener.playerMoved(playerId, row, column);
+            listener.playerMoved(currentPlayer, nextPlayer, row, column);
         }
     }
 
@@ -132,9 +129,9 @@ public class Connect4 {
         }
     }
 
-    private void firePlayerWonEvent(int playerId) {
+    private void firePlayerWonEvent(Player player) {
         for (GameListener listener : listeners) {
-            listener.playerWon(playerId);
+            listener.playerWon(player);
         }
     }
 
@@ -144,15 +141,15 @@ public class Connect4 {
         }
     }
 
-    private void fireRestartGameEvent() {
+    private void fireRestartGameEvent(Player firstPlayer) {
         for (GameListener listener : listeners) {
-            listener.resetGame();
+            listener.resetGame(firstPlayer);
         }
     }
 
-    private void fireGameStartedEvent() {
+    private void fireGameStartedEvent(Player firstPlayer) {
         for (GameListener listener : listeners) {
-            listener.gameStarted();
+            listener.gameStarted(firstPlayer);
         }
     }
 

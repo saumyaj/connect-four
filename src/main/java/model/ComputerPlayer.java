@@ -1,26 +1,28 @@
-package edu.nyu.cs.pqs.assignment4.model;
+package model;
 
 import java.util.Optional;
 import java.util.Random;
 
-class ComputerPlayer {
+public class ComputerPlayer extends Player {
     private Board board;
-    private Connect4 model;
+    private Random randomGenerator;
 
-    ComputerPlayer(Connect4 model) {
-        this.model = model;
+    public ComputerPlayer(String name, ConnectFourModel model, Symbol symbol) {
+        super(name, model, symbol);
+        randomGenerator = new Random();
     }
 
-    void move() {
-        board = model.getCurrentState();
+    @Override
+    public void move() {
+        board = gameModel.getCurrentState();
         Optional<Integer> winningMove = checkForWinningMove();
         int c = winningMove.orElseGet(this::pickARandomMove);
-        model.columnSelected(c);
+        gameModel.columnSelected(c);
     }
 
     private int pickARandomMove() {
         while(true) {
-            int col = new Random().nextInt(board.getWidth());
+            int col = randomGenerator.nextInt(board.getWidth());
             if (!board.isColumnFull(col)) {
                 return col;
             }

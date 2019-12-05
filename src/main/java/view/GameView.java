@@ -1,7 +1,9 @@
-package edu.nyu.cs.pqs.assignment4.view;
+package view;
 
-import edu.nyu.cs.pqs.assignment4.model.Connect4;
-import edu.nyu.cs.pqs.assignment4.model.GameListener;
+import model.ConnectFourModel;
+import controller.Controller;
+import model.GameListener;
+import model.Player;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -11,28 +13,39 @@ import java.awt.event.ActionListener;
 
 public class GameView implements GameListener {
 
-    private Connect4 game;
+    private ConnectFourModel model;
+    private Controller controller;
+
     private int NUMBER_OF_COLUMNS = 7, NUMBER_OF_ROWS = 6;
     private JLabel gameStatusLabel;
-    private String gameStatusMessage;
     private JFrame frame;
     private JPanel gamePanel, menuPanel;
     private JButton[] columnButtons;
     private JButton[][] gameBoardSquares;
 
-    public GameView(Connect4 game) {
-        this.game = game;
-        game.addGameListener(this);
+    private static final String FRAME_TITLE = "Connect4";
+    private static final String RESTART_BUTTON_TEXT = "Restart";
+    private static final String MAIN_MENU_BUTTON_TEXT = "Main Menu";
+    private static final String GAME_STARTED_LABEL_MESSAGE = "Game Started! %s to move";
+    private static final String PLAYER_MOVE_LABEL_MESSAGE = "%s to move";
+    private static final String GAME_DRAW_LABEL_MESSAGE = "Draw!";
+    private static final String PLAYER_WON_LABEL_MESSAGE = "%s won!";
+    private static final String SINGLE_PLAYER_GAME_BUTTON_TEXT = "New Single Player Game";
+    private static final String TWO_PLAYER_GAME_BUTTON_TEXT = "New Two Player Game";
+    private static int FRAME_WIDTH = 600;
+    private static int FRAME_HEIGHT = 600;
+
+    public GameView(Controller controller, ConnectFourModel model) {
+        this.model = model;
+        this.controller = controller;
+        this.model.addGameListener(this);
         gameBoardSquares = new JButton[NUMBER_OF_ROWS][NUMBER_OF_COLUMNS];
         initializeGui();
     }
 
-    public void initializeGui() {
+    void initializeGui() {
 
         // Setting up frame
-        String FRAME_TITLE = "Connect4";
-        int FRAME_WIDTH = 600;
-        int FRAME_HEIGHT = 600;
         frame = new JFrame(FRAME_TITLE);
         frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
         frame.setResizable(false);
@@ -51,7 +64,6 @@ public class GameView implements GameListener {
     }
 
     private void initializeGameBoardSquares() {
-        Insets buttonMargin = new Insets(0, 5, 0, 5);
         for (int ii = 0; ii < gameBoardSquares.length; ii++) {
             for (int jj = 0; jj < gameBoardSquares[ii].length; jj++) {
                 final JButton b = new JButton();
@@ -59,30 +71,28 @@ public class GameView implements GameListener {
                 b.setBorderPainted(false);
                 b.setBackground(Color.BLACK);
                 b.setOpaque(true);
-                b.setMargin(buttonMargin);
-                if ((jj % 2 == 1 && ii % 2 == 1)
-                        || (jj % 2 == 0 && ii % 2 == 0)) {
-                    b.setBackground(Color.WHITE);
-                } else {
-                    b.setBackground(Color.BLACK);
-                }
+                decideAndSetInitialButtonColor(b, ii, jj);
                 gameBoardSquares[ii][jj] = b;
             }
         }
     }
 
     private void resetGameBoardSquares() {
-        JButton b;
+        JButton button;
         for (int ii = 0; ii < gameBoardSquares.length; ii++) {
             for (int jj = 0; jj < gameBoardSquares[ii].length; jj++) {
-                b = gameBoardSquares[ii][jj];
-                if ((jj % 2 == 1 && ii % 2 == 1)
-                        || (jj % 2 == 0 && ii % 2 == 0)) {
-                    b.setBackground(Color.WHITE);
-                } else {
-                    b.setBackground(Color.BLACK);
-                }
+                button = gameBoardSquares[ii][jj];
+                decideAndSetInitialButtonColor(button, ii, jj);
             }
+        }
+    }
+
+    private void decideAndSetInitialButtonColor(JButton button, int row, int col) {
+        if ((col % 2 == 1 && row % 2 == 1)
+                || (col % 2 == 0 && row % 2 == 0)) {
+            button.setBackground(Color.WHITE);
+        } else {
+            button.setBackground(Color.BLACK);
         }
     }
 
@@ -124,20 +134,20 @@ public class GameView implements GameListener {
 
     private JPanel setupGameControlPanel() {
         JPanel gameControlPanel = new JPanel();
-        JButton restartButton = new JButton("RESTART");
-        JButton mainMenuButton = new JButton("Main Menu");
+        JButton restartButton = new JButton(RESTART_BUTTON_TEXT);
+        JButton mainMenuButton = new JButton(MAIN_MENU_BUTTON_TEXT);
 
-        restartButton.addActionListener(event -> game.resetGame());
+        restartButton.addActionListener(event -> controller.restartGame());
 
-        mainMenuButton.addActionListener(event -> game.stop());
+        mainMenuButton.addActionListener(event -> controller.goToMainMenu());
 
         gameControlPanel.add(restartButton);
         gameControlPanel.add(mainMenuButton);
         return gameControlPanel;
     }
 
-    public void resetGame() {
-        gameStatusLabel.setText(gameStatusMessage);
+    public void resetGame(Player firstPlayer) {
+        gameStatusLabel.setText(String.format(GAME_STARTED_LABEL_MESSAGE, firstPlayer.getName()));
         resetColumnButtons();
         resetGameBoardSquares();
     }
@@ -180,8 +190,7 @@ public class GameView implements GameListener {
 
     private JPanel setupGameStatusPanel() {
         JPanel gameStatusPanel = new JPanel();
-        gameStatusMessage = "Game started! Player 1 to move";
-        gameStatusLabel = new JLabel(gameStatusMessage);
+        gameStatusLabel = new JLabel();
         gameStatusPanel.add(gameStatusLabel);
         Border paddingBorder = BorderFactory.createEmptyBorder(10, 10, 10, 10);
         Border border = BorderFactory.createLineBorder(Color.BLACK);
@@ -191,12 +200,8 @@ public class GameView implements GameListener {
 
     private JPanel createMenuPanel() {
         JPanel menuPanel = new JPanel(new GridBagLayout());
-
-        String SINGLE_PLAYER_BUTTON_TEXT = "New Single Player Game";
-        String TWO_PLAYER_BUTTON_TEXT = "New Two Player Game";
-
-        JButton singlePlayerGameButton = new JButton(SINGLE_PLAYER_BUTTON_TEXT);
-        JButton twoPlayerGameButton = new JButton(TWO_PLAYER_BUTTON_TEXT);
+        JButton singlePlayerGameButton = new JButton(SINGLE_PLAYER_GAME_BUTTON_TEXT);
+        JButton twoPlayerGameButton = new JButton(TWO_PLAYER_GAME_BUTTON_TEXT);
 
         singlePlayerGameButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent event) {
@@ -220,10 +225,11 @@ public class GameView implements GameListener {
     }
 
     private void gameSelectionButtonPressed(boolean isSinglePlayer) {
-        game.startGame(isSinglePlayer);
+        controller.startGame(isSinglePlayer);
     }
 
-    public void gameStarted() {
+    public void gameStarted(Player firstPlayer) {
+        gameStatusLabel.setText(String.format(GAME_STARTED_LABEL_MESSAGE, firstPlayer.getName()));
         frame.getContentPane().removeAll();
         frame.getContentPane().add(gamePanel);
         frame.revalidate();
@@ -234,17 +240,16 @@ public class GameView implements GameListener {
 
     private void columnButtonPressed(JButton button) {
         int column = Integer.parseInt(button.getName());
-        game.columnSelected(column);
+        controller.columnSelected(column);
     }
 
-    public void playerMoved(int playerId, int row, int column) {
-        if (playerId == 0) {
+    public void playerMoved(Player currentPlayer, Player otherPlayer, int row, int column) {
+        if (currentPlayer.getSymbol().equals(Player.Symbol.CIRCLE)) {
             gameBoardSquares[row][column].setBackground(Color.RED);
-            gameStatusLabel.setText("Player 2 to move");
         } else {
             gameBoardSquares[row][column].setBackground(Color.BLUE);
-            gameStatusLabel.setText("Player 1 to move");
         }
+        gameStatusLabel.setText(String.format(PLAYER_MOVE_LABEL_MESSAGE, otherPlayer.getName()));
     }
 
     private void disableAllColumnButtons() {
@@ -253,14 +258,14 @@ public class GameView implements GameListener {
         }
     }
 
-    public void playerWon(int playerId) {
+    public void playerWon(Player player) {
         disableAllColumnButtons();
-        gameStatusLabel.setText("player " + (playerId + 1) + " won!");
+        gameStatusLabel.setText(String.format(PLAYER_WON_LABEL_MESSAGE, player.getName()));
     }
 
     public void gameDraw() {
         disableAllColumnButtons();
-        gameStatusLabel.setText("Draw!");
+        gameStatusLabel.setText(GAME_DRAW_LABEL_MESSAGE);
     }
 
     public void disableColumnButton(int column) {
@@ -270,6 +275,8 @@ public class GameView implements GameListener {
     public void gameStopped() {
         frame.getContentPane().removeAll();
         frame.getContentPane().add(menuPanel);;
+        frame.doLayout();
         frame.update(frame.getGraphics());
+        frame.repaint();
     }
 }

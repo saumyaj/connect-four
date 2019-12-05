@@ -1,14 +1,16 @@
-package edu.nyu.cs.pqs.assignment4.model;
+package model;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import static edu.nyu.cs.pqs.assignment4.model.TestUtils.board;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BoardTest {
+
+    private Board board = new Board();
 
     @BeforeEach
     void resetTestBoard() {
@@ -17,8 +19,10 @@ class BoardTest {
 
     @Test
     void testFullColumnDetection() {
-        TestUtils.fillTheColumnOfTheBoard(TestUtils.board, 0);
-        assertTrue(TestUtils.board.isColumnFull(0));
+        for (int i = 0; i < board.getHeight(); i++) {
+            board.columnSelected(0, 0);
+        }
+        assertTrue(board.isColumnFull(0));
         board.reset();
     }
 
@@ -131,17 +135,17 @@ class BoardTest {
 
     @Test
     void testBoardCloneConstruction() {
-        Board board1 = new Board(5, 10);
-        for (int i=0;i<10;i++) {
-            for (int j=0;j<5;j++) {
+        Board board1 = new Board();
+        for (int i=0;i<board.getHeight();i++) {
+            for (int j=0;j<board.getWidth();j++) {
                 board1.columnSelected(j, i*j);
             }
         }
 
         Board board2 = new Board(board1);
 
-        for (int i=0;i<10;i++) {
-            for (int j=0;j<5;j++) {
+        for (int i=0;i<board1.getHeight();i++) {
+            for (int j=0;j<board1.getWidth();j++) {
                 assertEquals(board1.getEntry(i, j), board2.getEntry(i, j));
             }
         }

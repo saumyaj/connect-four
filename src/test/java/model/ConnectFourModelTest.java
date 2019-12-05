@@ -1,4 +1,4 @@
-package edu.nyu.cs.pqs.assignment4.model;
+package model;
 
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,32 +9,34 @@ import org.mockito.stubbing.Answer;
 
 import java.lang.reflect.Field;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class Connect4Test {
+public class ConnectFourModelTest {
 
     @Mock
-    GameListener gameListenerMock1;
+    GameListener gameListenerMock1, gameListenerMock2;
 
     @Mock
     Board gameBoardMock;
 
     @Mock
-    GameListener gameListenerMock2;
+    ComputerPlayer cp1;
+
+    @Mock
+    HumanPlayer hp1, hp2;
 
     @BeforeEach
     void resetModel() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        Field instance = Connect4.class.getDeclaredField("connect4");
+        Field instance = ConnectFourModel.class.getDeclaredField("connectFourModel");
         instance.setAccessible(true);
         instance.set(null, null);
     }
 
     @Test
     void testIllegalColumnSelectedThrowsException() {
-        Connect4 model = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel model = ConnectFourModel.getInstance(gameBoardMock);
         model.addGameListener(gameListenerMock1);
 
         doThrow(IllegalArgumentException.class)
@@ -48,24 +50,25 @@ public class Connect4Test {
 
     @Test
     void testPlayerMovesAreRelayedToTheListenersCorrectly() {
-        Connect4 model = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel model = ConnectFourModel.getInstance(gameBoardMock);
         model.addGameListener(gameListenerMock1);
         model.addGameListener(gameListenerMock2);
+        model.startGame(hp1, hp2);
 
         doReturn(5).when(gameBoardMock).columnSelected(anyInt(), anyInt());
 
         model.columnSelected(0);
-        verify(gameListenerMock1).playerMoved(0, 5, 0);
-        verify(gameListenerMock2).playerMoved(0, 5, 0);
+        verify(gameListenerMock1).playerMoved(hp1, hp2, 5, 0);
+        verify(gameListenerMock2).playerMoved(hp1, hp2, 5, 0);
 
         model.columnSelected(1);
-        verify(gameListenerMock1).playerMoved(1, 5, 1);
-        verify(gameListenerMock2).playerMoved(1, 5, 1);
+        verify(gameListenerMock1).playerMoved(hp2, hp1, 5, 1);
+        verify(gameListenerMock2).playerMoved(hp2, hp1, 5, 1);
     }
 
     @Test
     void testGameStoppedRelayedToAllListenersSuccessfully() {
-        Connect4 model = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel model = ConnectFourModel.getInstance(gameBoardMock);
         model.addGameListener(gameListenerMock1);
         model.addGameListener(gameListenerMock2);
 
@@ -76,29 +79,29 @@ public class Connect4Test {
 
     @Test
     void testSinglePlayerGameStartedRelayedToAllListenersSuccessfully() {
-        Connect4 model = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel model = ConnectFourModel.getInstance(gameBoardMock);
         model.addGameListener(gameListenerMock1);
         model.addGameListener(gameListenerMock2);
 
-        model.startGame(true);
-        verify(gameListenerMock1).gameStarted();
-        verify(gameListenerMock2).gameStarted();
+        model.startGame(hp1, cp1);
+        verify(gameListenerMock1).gameStarted(hp1);
+        verify(gameListenerMock2).gameStarted(hp1);
     }
 
     @Test
     void testTwoPlayerGameStartedRelayedToAllListenersSuccessfully() {
-        Connect4 model = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel model = ConnectFourModel.getInstance(gameBoardMock);
         model.addGameListener(gameListenerMock1);
         model.addGameListener(gameListenerMock2);
 
-        model.startGame(false);
-        verify(gameListenerMock1).gameStarted();
-        verify(gameListenerMock2).gameStarted();
+        model.startGame(hp1, hp2);
+        verify(gameListenerMock1).gameStarted(hp1);
+        verify(gameListenerMock2).gameStarted(hp1);
     }
 
     @Test
     void testWhenBoardIsFullGameDrawIsCalledForAllListeners() {
-        Connect4 modelWithMockBoard = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel modelWithMockBoard = ConnectFourModel.getInstance(gameBoardMock);
         modelWithMockBoard.addGameListener(gameListenerMock1);
         modelWithMockBoard.addGameListener(gameListenerMock2);
 
@@ -114,24 +117,26 @@ public class Connect4Test {
 
     @Test
     void testPlayer1WonIsCalledForAllListeners() {
-        Connect4 modelWithMockBoard = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel modelWithMockBoard = ConnectFourModel.getInstance(gameBoardMock);
         modelWithMockBoard.addGameListener(gameListenerMock1);
         modelWithMockBoard.addGameListener(gameListenerMock2);
+        modelWithMockBoard.startGame(hp1, hp2);
 
         when(gameBoardMock.findContiguousSymbols(4, 0)).thenReturn(true);
 
         modelWithMockBoard.columnSelected(0);
 
-        verify(gameListenerMock1).playerWon(0);
-        verify(gameListenerMock2).playerWon(0);
+        verify(gameListenerMock1).playerWon(hp1);
+        verify(gameListenerMock2).playerWon(hp1);
 
     }
 
     @Test
     void testPlayer2WonIsCalledForAllListeners() {
-        Connect4 modelWithMockBoard = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel modelWithMockBoard = ConnectFourModel.getInstance(gameBoardMock);
         modelWithMockBoard.addGameListener(gameListenerMock1);
         modelWithMockBoard.addGameListener(gameListenerMock2);
+        modelWithMockBoard.startGame(hp1, hp2);
 
         Mockito.when(gameBoardMock.findContiguousSymbols(Mockito.any(Integer.class), Mockito.any(Integer.class)))
                 .thenAnswer((Answer) invocation -> {
@@ -145,16 +150,16 @@ public class Connect4Test {
         modelWithMockBoard.columnSelected(0);
         modelWithMockBoard.columnSelected(0);
 
-        verify(gameListenerMock1).playerWon(1);
-        verify(gameListenerMock2).playerWon(1);
+        verify(gameListenerMock1).playerWon(hp2);
+        verify(gameListenerMock2).playerWon(hp2);
     }
 
     @Test
     void testColumnDisableFired() {
-        Connect4 modelWithMockBoard = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel modelWithMockBoard = ConnectFourModel.getInstance(gameBoardMock);
         modelWithMockBoard.addGameListener(gameListenerMock1);
         modelWithMockBoard.addGameListener(gameListenerMock2);
-
+        modelWithMockBoard.startGame(hp1, hp2);
         when(gameBoardMock.isColumnFull(0)).thenReturn(true);
 
         modelWithMockBoard.columnSelected(0);
@@ -165,10 +170,10 @@ public class Connect4Test {
 
     @Test
     void testRemoveListener() {
-        Connect4 modelWithMockBoard = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel modelWithMockBoard = ConnectFourModel.getInstance(gameBoardMock);
         modelWithMockBoard.addGameListener(gameListenerMock1);
         modelWithMockBoard.addGameListener(gameListenerMock2);
-
+        modelWithMockBoard.startGame(hp1, hp2);
         when(gameBoardMock.isColumnFull(0)).thenReturn(true);
 
         modelWithMockBoard.removeGameListener(gameListenerMock2);
@@ -181,15 +186,32 @@ public class Connect4Test {
 
     @Test
     void testListenerIsAddedOnlyOnce() {
-        Connect4 modelWithMockBoard = Connect4.getInstance(gameBoardMock);
+        ConnectFourModel modelWithMockBoard = ConnectFourModel.getInstance(gameBoardMock);
         modelWithMockBoard.addGameListener(gameListenerMock1);
         modelWithMockBoard.addGameListener(gameListenerMock1);
-
+        modelWithMockBoard.startGame(hp1, hp2);
         when(gameBoardMock.isColumnFull(0)).thenReturn(true);
 
         modelWithMockBoard.columnSelected(0);
 
         verify(gameListenerMock1, times(1)).disableColumnButton(0);
+    }
+
+    @Test
+    void testRestartGameResetsTheBoardSuccessfully() {
+        ConnectFourModel modelWithMockBoard = ConnectFourModel.getInstance(gameBoardMock);
+        modelWithMockBoard.addGameListener(gameListenerMock1);
+        modelWithMockBoard.addGameListener(gameListenerMock2);
+        modelWithMockBoard.startGame(hp1, hp2);
+
+//        when(gameBoardMock.isColumnFull(0)).thenReturn(true);
+
+        doNothing().when(gameBoardMock).reset();
+
+        modelWithMockBoard.restartGame();
+
+        verify(gameListenerMock1, times(1)).resetGame(hp1);
+        verify(gameListenerMock2, times(1)).resetGame(hp1);
     }
 
 }
