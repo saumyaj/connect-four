@@ -28,7 +28,7 @@ class BoardTest {
 
     @Test
     void testNonFullColumnDetection() {
-        for (int j = 0; j<=board.getHeight()-1; j++) {
+        for (int j = 0; j <= board.getHeight() - 1; j++) {
             for (int i = 0; i < j; i++) {
                 board.columnSelected(0, 0);
             }
@@ -53,7 +53,7 @@ class BoardTest {
 
     @Test
     void testColumnSelectedWithFullColumn() {
-        for (int i = 0; i<board.getHeight(); i++) {
+        for (int i = 0; i < board.getHeight(); i++) {
             board.columnSelected(0, 0);
         }
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
@@ -80,8 +80,8 @@ class BoardTest {
 
     @Test
     void testFullBoard() {
-        for (int i = 0; i<board.getWidth(); i++) {
-            for(int j = 0; j<board.getHeight(); j++) {
+        for (int i = 0; i < board.getWidth(); i++) {
+            for (int j = 0; j < board.getHeight(); j++) {
                 board.columnSelected(i, 0);
             }
         }
@@ -94,7 +94,7 @@ class BoardTest {
     @Test
     void testContiguousSymbolsInARow() {
         // Test contiguous in a row
-        for (int i=1;i<=4;i++) {
+        for (int i = 1; i <= 4; i++) {
             board.columnSelected(i, 1);
         }
         assertTrue(board.findContiguousSymbols(4, 1));
@@ -102,7 +102,7 @@ class BoardTest {
 
     @Test
     void testContiguousSymbolsInAColumn() {
-        for(int i=0;i<4;i++) {
+        for (int i = 0; i < 4; i++) {
             board.columnSelected(0, 1);
         }
         assertTrue(board.findContiguousSymbols(4, 1));
@@ -110,8 +110,8 @@ class BoardTest {
 
     @Test
     void testContiguousSymbolsOnDescendingDiagonal() {
-        for(int i=4;i>=1;i--) {
-            for (int j=i;j>=1;j--) {
+        for (int i = 4; i >= 1; i--) {
+            for (int j = i; j >= 1; j--) {
                 board.columnSelected(4 - i, j);
             }
         }
@@ -120,8 +120,8 @@ class BoardTest {
 
     @Test
     void testContiguousSymbolsOnAscendingDiagonal() {
-        for(int i=1;i<=4;i++) {
-            for (int j=i;j>=1;j--) {
+        for (int i = 1; i <= 4; i++) {
+            for (int j = i; j >= 1; j--) {
                 board.columnSelected(i, j);
             }
         }
@@ -136,16 +136,16 @@ class BoardTest {
     @Test
     void testBoardCloneConstruction() {
         Board board1 = new Board();
-        for (int i=0;i<board.getHeight();i++) {
-            for (int j=0;j<board.getWidth();j++) {
-                board1.columnSelected(j, i*j);
+        for (int i = 0; i < board.getHeight(); i++) {
+            for (int j = 0; j < board.getWidth(); j++) {
+                board1.columnSelected(j, i * j);
             }
         }
 
         Board board2 = new Board(board1);
 
-        for (int i=0;i<board1.getHeight();i++) {
-            for (int j=0;j<board1.getWidth();j++) {
+        for (int i = 0; i < board1.getHeight(); i++) {
+            for (int j = 0; j < board1.getWidth(); j++) {
                 assertEquals(board1.getEntry(i, j), board2.getEntry(i, j));
             }
         }

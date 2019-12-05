@@ -32,6 +32,9 @@ public class GameView implements GameListener {
     private static final String PLAYER_WON_LABEL_MESSAGE = "%s won!";
     private static final String SINGLE_PLAYER_GAME_BUTTON_TEXT = "New Single Player Game";
     private static final String TWO_PLAYER_GAME_BUTTON_TEXT = "New Two Player Game";
+    private static final String SINGLE_PLAYER_GAME_NAME = "SINGLE_PLAYER_GAME";
+    private static final String TWO_PLAYER_GAME_NAME = "TWO_PLAYER_GAME";
+
     private static int FRAME_WIDTH = 600;
     private static int FRAME_HEIGHT = 600;
 
@@ -201,19 +204,13 @@ public class GameView implements GameListener {
     private JPanel createMenuPanel() {
         JPanel menuPanel = new JPanel(new GridBagLayout());
         JButton singlePlayerGameButton = new JButton(SINGLE_PLAYER_GAME_BUTTON_TEXT);
+        singlePlayerGameButton.setName(SINGLE_PLAYER_GAME_NAME);
         JButton twoPlayerGameButton = new JButton(TWO_PLAYER_GAME_BUTTON_TEXT);
+        twoPlayerGameButton.setName(TWO_PLAYER_GAME_NAME);
 
-        singlePlayerGameButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                gameSelectionButtonPressed(true);
-            }
-        });
+        singlePlayerGameButton.addActionListener(event -> gameSelectionButtonPressed((JButton) event.getSource()));
 
-        twoPlayerGameButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                gameSelectionButtonPressed(false);
-            }
-        });
+        twoPlayerGameButton.addActionListener(event -> gameSelectionButtonPressed((JButton) event.getSource()));
 
         JPanel centerPanel = new JPanel();
         centerPanel.add(singlePlayerGameButton);
@@ -224,8 +221,8 @@ public class GameView implements GameListener {
         return menuPanel;
     }
 
-    private void gameSelectionButtonPressed(boolean isSinglePlayer) {
-        controller.startGame(isSinglePlayer);
+    private void gameSelectionButtonPressed(JButton button) {
+        controller.startGame(button.getName());
     }
 
     public void gameStarted(Player firstPlayer) {
@@ -274,7 +271,8 @@ public class GameView implements GameListener {
 
     public void gameStopped() {
         frame.getContentPane().removeAll();
-        frame.getContentPane().add(menuPanel);;
+        frame.getContentPane().add(menuPanel);
+        ;
         frame.doLayout();
         frame.update(frame.getGraphics());
         frame.repaint();

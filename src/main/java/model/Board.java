@@ -5,15 +5,15 @@ import java.util.Optional;
 
 class Board {
     private int[][] board;
-    private final int height = 6; //capital letters
-    private final int width = 7;//capital letters
+    private final int HEIGHT = 6;
+    private final int WIDTH = 7;
 
     int getHeight() {
-        return height;
+        return HEIGHT;
     }
 
     int getWidth() {
-        return width;
+        return WIDTH;
     }
 
     Board() {
@@ -22,8 +22,8 @@ class Board {
 
     Board(Board sourceBoard) {
         initializeBoard();
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
+        for (int i = 0; i < WIDTH; i++) {
+            for (int j = 0; j < HEIGHT; j++) {
                 board[j][i] = sourceBoard.getEntry(j, i);
             }
         }
@@ -34,8 +34,8 @@ class Board {
     }
 
     private void initializeBoard() {
-        this.board = new int[height][width];
-        for (int i = 0; i < height; i++) {
+        this.board = new int[HEIGHT][WIDTH];
+        for (int i = 0; i < HEIGHT; i++) {
             Arrays.fill(this.board[i], -1);
         }
     }
@@ -45,9 +45,9 @@ class Board {
     }
 
     int columnSelected(int col, int turn) throws IllegalArgumentException {
-        if (col < 0 || col >= width) {
+        if (col < 0 || col >= WIDTH) {
             throw new IllegalArgumentException("invalid column value; column value should be between 0 and " +
-                    width);
+                    WIDTH);
         }
         if (isColumnFull(col)) {
             throw new IllegalArgumentException("invalid column selection; column " + col + " is full");
@@ -58,7 +58,7 @@ class Board {
     }
 
     void removeMostRecentEntryFromColumn(int col) {
-        for (int i = 0; i < height; i++) {
+        for (int i = 0; i < HEIGHT; i++) {
             if (board[i][col] != -1) {
                 board[i][col] = -1;
                 break;
@@ -67,7 +67,7 @@ class Board {
     }
 
     private Optional<Integer> nextEmptyRow(int col) {
-        for (int i = this.height - 1; i >= 0; i--) {
+        for (int i = this.HEIGHT - 1; i >= 0; i--) {
             if (board[i][col] == -1) {
                 return Optional.of(i);
             }
@@ -76,7 +76,7 @@ class Board {
     }
 
     boolean isBoardFull() {
-        for (int j = 0; j < width; j++) {
+        for (int j = 0; j < WIDTH; j++) {
             if (board[0][j] == -1) {
                 return false;
             }
@@ -87,9 +87,9 @@ class Board {
     boolean findContiguousSymbols(int n, int symbol) {
 
         // Check if n in a row
-        for (int row = 0; row < height; row++) {
-            for (int col = 0; col < width; col++) {
-                if (board[row][col] == symbol && col + (n - 1) < width) {
+        for (int row = 0; row < HEIGHT; row++) {
+            for (int col = 0; col < WIDTH; col++) {
+                if (board[row][col] == symbol && col + (n - 1) < WIDTH) {
                     boolean flag = true;
                     for (int k = 1; k < n; k++) {
                         if (board[row][col + k] != symbol) {
@@ -105,9 +105,9 @@ class Board {
         }
 
         // Check if n in a column
-        for (int col = 0; col < width; col++) {
-            for (int row = 0; row < height; row++) {
-                if (board[row][col] == symbol && row + (n - 1) < height) {
+        for (int col = 0; col < WIDTH; col++) {
+            for (int row = 0; row < HEIGHT; row++) {
+                if (board[row][col] == symbol && row + (n - 1) < HEIGHT) {
                     boolean flag = true;
                     for (int k = 1; k < n; k++) {
                         if (board[row + k][col] != symbol) {
@@ -123,8 +123,8 @@ class Board {
         }
 
         // Check for n consecutive symbols in ascending diagonal.
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
+        for (int i = 0; i < HEIGHT; i++) {
+            for (int j = 0; j < WIDTH; j++) {
                 if (canMove(i + (n - 1), j + (n - 1))) {
                     if (board[i][j] == board[i + 1][j + 1]
                             && board[i][j] == board[i + 2][j + 2]
@@ -137,8 +137,8 @@ class Board {
         }
 
         // Check for n consecutive symbols in descending diagonal.
-        for (int i = 0; i < height; i++) {
-            for (int j = 0; j < width; j++) {
+        for (int i = 0; i < HEIGHT; i++) {
+            for (int j = 0; j < WIDTH; j++) {
                 if (canMove(i - (n - 1), j + (n - 1))) {
                     if (board[i][j] == board[i - 1][j + 1]
                             && board[i][j] == board[i - 2][j + 2]
@@ -157,34 +157,9 @@ class Board {
     }
 
     private boolean canMove(int row, int col) {
-        if ((row <= -1) || (col <= -1) || (row >= height) || (col >= width)) {
+        if ((row <= -1) || (col <= -1) || (row >= HEIGHT) || (col >= WIDTH)) {
             return false;
         }
         return true;
     }
-
-//    public void print() {
-//        for (int i = 0; i < height; i++) {
-//            for (int j = 0; j < width; j++) {
-//                if (j != 6) {
-//                    if (board[i][j] == 1) {
-//                        System.out.print("| " + "X" + " ");
-//                    } else if (board[i][j] == 0) {
-//                        System.out.print("| " + "O" + " ");
-//                    } else {
-//                        System.out.print("| " + "-" + " ");
-//                    }
-//                } else {
-//                    if (board[i][j] == 1) {
-//                        System.out.println("| " + "X" + " |");
-//                    } else if (board[i][j] == 0) {
-//                        System.out.println("| " + "O" + " |");
-//                    } else {
-//                        System.out.println("| " + "-" + " |");
-//                    }
-//                }
-//            }
-//        }
-//        return;
-//    }
 }

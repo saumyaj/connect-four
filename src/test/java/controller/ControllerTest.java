@@ -1,9 +1,10 @@
 package controller;
 
+import model.GamePlayersFactory;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import view.GameView;
 import model.ComputerPlayer;
 import model.ConnectFourModel;
 import model.HumanPlayer;
@@ -16,45 +17,46 @@ import static org.mockito.Mockito.verify;
 public class ControllerTest {
 
     @Mock
-    GameView mockGameView;
-
-    @Mock
     ConnectFourModel mockModel;
 
     private Controller controller;
 
+    @BeforeEach
+    void initController() {
+        controller = new Controller(mockModel, GamePlayersFactory.getInstance());
+    }
+
     @Test
     public void testSinglePlayerGameStarted() {
-        controller = new Controller(mockModel);
-        controller.startGame(true);
-        verify(mockModel).startGame(any(HumanPlayer.class), any(ComputerPlayer.class)) ;
+
+        controller.startGame("SINGLE_PLAYER_GAME");
+        verify(mockModel).startGame(any(HumanPlayer.class), any(ComputerPlayer.class));
     }
 
     @Test
     public void testTwoPlayerGameStarted() {
-        controller = new Controller(mockModel);
-        controller.startGame(false);
-        verify(mockModel).startGame(any(HumanPlayer.class), any(HumanPlayer.class)) ;
+        controller.startGame("TWO_PLAYER_GAME");
+        verify(mockModel).startGame(any(HumanPlayer.class), any(HumanPlayer.class));
     }
 
     @Test
     public void testColumnSelected() {
-        controller = new Controller(mockModel);
         controller.columnSelected(1);
-        verify(mockModel).columnSelected(1); ;
+        verify(mockModel).columnSelected(1);
+        ;
     }
 
     @Test
     public void testRestartGame() {
-        controller = new Controller(mockModel);
         controller.restartGame();
-        verify(mockModel).restartGame(); ;
+        verify(mockModel).resetGame();
+        ;
     }
 
     @Test
     public void testGoToMainMenu() {
-        controller = new Controller(mockModel);
         controller.goToMainMenu();
-        verify(mockModel).stop(); ;
+        verify(mockModel).stop();
+        ;
     }
 }

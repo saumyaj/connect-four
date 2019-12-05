@@ -2,6 +2,9 @@ package model;
 
 import java.util.*;
 
+/**
+ * This class implements the connect 4 game
+ */
 public class ConnectFourModel {
 
     private List<GameListener> listeners;
@@ -9,10 +12,17 @@ public class ConnectFourModel {
     private int turn;
     private final int WIN_LIMIT = 4;
     private Board gameBoard;
+    private boolean isGameRunning = false;
     private static final int NUM_OF_PLAYERS = 2;
 
     private static ConnectFourModel connectFourModel;
 
+    /**
+     * This method returns an existing or new object of ConnectFourModel class
+     *
+     * @param board The board object to maintain the state of the Connect 4 game
+     * @return Return singleton object of ConnectFourModel class
+     */
     public static ConnectFourModel getInstance(Board board) {
         if (connectFourModel == null)
             connectFourModel = new ConnectFourModel(board);
@@ -29,6 +39,7 @@ public class ConnectFourModel {
     /**
      * Adds the listener (observers) to the listeners list. The registered listeners are notified when the state of
      * the model is updated
+     *
      * @param listener A listener object that implements the GameListener interface
      */
     public void addGameListener(GameListener listener) {
@@ -44,14 +55,16 @@ public class ConnectFourModel {
 
     /**
      * This method initiates the game model
+     *
      * @param p1 - first player in the game. This players gets first move
      * @param p2 - second player in the game. This player moves after the first player
      */
     public void startGame(Player p1, Player p2) {
         players[0] = p1;
         players[1] = p2;
-        restartGame();
+        resetGame();
         fireGameStartedEvent(p1);
+        isGameRunning = true;
     }
 
     /**
@@ -61,6 +74,10 @@ public class ConnectFourModel {
      * @throws IllegalArgumentException If an invalid parameter is passed
      */
     public void columnSelected(int column) throws IllegalArgumentException {
+        if (!isGameRunning) {
+            throw new IllegalStateException("The game is not ready to start playing. You need to start the game" +
+                    "before making a move");
+        }
         // Try to make a move by the current player
         int row = gameBoard.columnSelected(column, turn);
 
@@ -96,10 +113,11 @@ public class ConnectFourModel {
     /**
      * This method resets the game to its initial state and gives the chance to move to player 1
      */
-    public void restartGame() {
+    public void resetGame() {
         gameBoard.reset();
         turn = 0;
         fireRestartGameEvent(players[0]);
+        isGameRunning = true;
     }
 
     /**
@@ -109,6 +127,7 @@ public class ConnectFourModel {
         gameBoard.reset();
         turn = 0;
         fireGameStoppedEvent();
+        isGameRunning = false;
     }
 
     private void fireGameStoppedEvent() {

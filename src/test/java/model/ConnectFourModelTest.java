@@ -13,7 +13,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ConnectFourModelTest {
+class ConnectFourModelTest {
 
     @Mock
     GameListener gameListenerMock1, gameListenerMock2;
@@ -38,7 +38,7 @@ public class ConnectFourModelTest {
     void testIllegalColumnSelectedThrowsException() {
         ConnectFourModel model = ConnectFourModel.getInstance(gameBoardMock);
         model.addGameListener(gameListenerMock1);
-
+        model.startGame(hp1, hp2);
         doThrow(IllegalArgumentException.class)
                 .when(gameBoardMock)
                 .columnSelected(anyInt(), anyInt());
@@ -107,7 +107,7 @@ public class ConnectFourModelTest {
 
         when(gameBoardMock.isBoardFull()).thenReturn(true);
         when(gameBoardMock.isColumnFull(anyInt())).thenReturn(false);
-
+        modelWithMockBoard.startGame(hp1, hp1);
         modelWithMockBoard.columnSelected(0);
 
         verify(gameListenerMock1).gameDraw();
@@ -202,16 +202,26 @@ public class ConnectFourModelTest {
         ConnectFourModel modelWithMockBoard = ConnectFourModel.getInstance(gameBoardMock);
         modelWithMockBoard.addGameListener(gameListenerMock1);
         modelWithMockBoard.addGameListener(gameListenerMock2);
+
         modelWithMockBoard.startGame(hp1, hp2);
-
-//        when(gameBoardMock.isColumnFull(0)).thenReturn(true);
-
         doNothing().when(gameBoardMock).reset();
 
-        modelWithMockBoard.restartGame();
+        modelWithMockBoard.resetGame();
 
-        verify(gameListenerMock1, times(1)).resetGame(hp1);
-        verify(gameListenerMock2, times(1)).resetGame(hp1);
+        verify(gameListenerMock1, times(2)).resetGame(hp1);
+        verify(gameListenerMock2, times(2)).resetGame(hp1);
+    }
+
+    @Test
+    void testModelThrowsIllegalStateExceptionForIllegalStates() {
+        ConnectFourModel modelWithMockBoard = ConnectFourModel.getInstance(gameBoardMock);
+        modelWithMockBoard.addGameListener(gameListenerMock1);
+        modelWithMockBoard.addGameListener(gameListenerMock2);
+
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            modelWithMockBoard.columnSelected(0);
+        });
+
     }
 
 }

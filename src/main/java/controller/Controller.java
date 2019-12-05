@@ -1,29 +1,21 @@
 package controller;
 
-import model.ComputerPlayer;
-import model.ConnectFourModel;
-import model.HumanPlayer;
-import model.Player;
-import view.GameView;
+import model.*;
+
+import java.util.List;
 
 public class Controller {
     ConnectFourModel model;
-    GameView view;
+    GamePlayersFactory gamePlayersFactory;
 
-    public Controller(ConnectFourModel model) {
+    public Controller(ConnectFourModel model, GamePlayersFactory gamePlayersFactory) {
         this.model = model;
-//        view = new GameView(this, model);
+        this.gamePlayersFactory = gamePlayersFactory;
     }
 
-    public void startGame(boolean isSinglePlayer) {
-        Player p1 = new HumanPlayer("Player1", model, Player.Symbol.CIRCLE);
-        Player p2;
-        if (isSinglePlayer)
-            p2 = new ComputerPlayer("Computer", model, Player.Symbol.CROSS);
-        else {
-            p2 = new HumanPlayer("Player2", model, Player.Symbol.CROSS);
-        }
-        model.startGame(p1, p2);
+    public void startGame(String gameName) {
+        List<Player> players = gamePlayersFactory.createPlayers(gameName, model);
+        model.startGame(players.get(0), players.get(1));
     }
 
     public void columnSelected(int column) {
@@ -35,6 +27,6 @@ public class Controller {
     }
 
     public void restartGame() {
-        model.restartGame();
+        model.resetGame();
     }
 }

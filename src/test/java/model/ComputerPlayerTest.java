@@ -12,7 +12,7 @@ import java.lang.reflect.Field;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
-public class ComputerPlayerTest {
+class ComputerPlayerTest {
 
     @Mock
     HumanPlayer mockHumanPlayer1, mockHumanPlayer2;
